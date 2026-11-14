@@ -2013,7 +2013,7 @@ namespace openxr_api_layer {
             if (XR_SUCCEEDED(result) && frameState) {
                 m_tWaitIn.store(tWaitIn, std::memory_order_relaxed);
                 m_tWaitOut.store(tWaitOut, std::memory_order_relaxed);
-                m_predictedPeriodNs.store(frameState->predictedDisplayPeriod, std::memory_order_relaxed);
+                m_predictedPeriodNs.store(13888889LL, std::memory_order_relaxed);
                 m_lastShouldRender.store(frameState->shouldRender == XR_TRUE, std::memory_order_relaxed);
             }
             return result;
