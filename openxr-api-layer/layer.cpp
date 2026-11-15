@@ -2720,14 +2720,24 @@ namespace openxr_api_layer {
                             : r.app_cpu_ns;
                     m_overlayRenderer->pushFrameSample(cpu_per_cycle_ns,
                                                        r.gpu_time_ns);
-                              if (r.period_ns > 0) {
-                    if (cpu_per_cycle_ns > r.period_ns) {
-                        detail::g_cpuDrops.fetch_add(1, std::memory_order_relaxed);
-                    }
-                    if (r.gpu_time_ns > r.period_ns) {
+                                  if (r.period_ns > 0) {
+                    static bool s_wasGpuOver = false;
+                    static bool s_wasCpuOver = false;
+
+                    const bool isGpuOver = (r.gpu_time_ns > r.period_ns);
+                    const bool isCpuOver = (cpu_per_cycle_ns > r.period_ns);
+
+                    if (isGpuOver && !s_wasGpuOver) {
                         detail::g_gpuDrops.fetch_add(1, std::memory_order_relaxed);
                     }
+                    if (isCpuOver && !s_wasCpuOver) {
+                        detail::g_cpuDrops.fetch_add(1, std::memory_order_relaxed);
+                    }
+
+                    s_wasGpuOver = isGpuOver;
+                    s_wasCpuOver = isCpuOver;
                 }
+
   }
             }
         }
