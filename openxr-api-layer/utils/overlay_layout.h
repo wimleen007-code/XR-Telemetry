@@ -100,6 +100,10 @@ namespace openxr_api_layer::detail {
     // per-core usage comes from a documented user-mode NT call we can
     // make in-process. cpus_max_pct renders "--" only when the source
     // is unavailable (NaN) — same isfinite() guard as the GPU cells.
+
+            inline std::atomic<uint32_t> g_cpuDrops{0};
+            inline std::atomic<uint32_t> g_gpuDrops{0};
+
     struct OverlayDisplayValues {
         // Header bar
         std::string fps_instant      = "--";  // big white number
@@ -226,9 +230,6 @@ namespace openxr_api_layer::detail {
         auto pctToFraction = [](float p) {
             return std::isfinite(p) ? std::clamp(p / 100.0f, 0.0f, 1.0f) : 0.0f;
         };
-
-            inline std::atomic<uint32_t> g_cpuDrops{0};
-            inline std::atomic<uint32_t> g_gpuDrops{0};
 
             v.fps_instant = fmtFpsInt(snap.fps_instant);
             v.fps_avg     = fmtFpsInt(snap.fps_avg);
