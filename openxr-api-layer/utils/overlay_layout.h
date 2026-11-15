@@ -235,7 +235,7 @@ namespace openxr_api_layer::detail {
             v.fps_avg     = fmtFpsInt(snap.fps_avg);
             v.fps_p95     = fmtFpsInt(snap.fps_p95);
             v.fps_p99     = fmtFpsInt(snap.fps_p99);
-            v.fps_p99_9   = std::to_string(g_cpuDrops.load()) + "/" + std::to_string(g_gpuDrops.load());
+            v.fps_p99_9   = std::to_string(g_gpuDrops.load()) + "/" + std::to_string(g_cpuDrops.load());
 
 
         v.gpu_frametime_ms = fmtMsOneDecimal(snap.gpu_frame_ms);
