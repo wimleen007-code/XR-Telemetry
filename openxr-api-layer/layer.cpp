@@ -1472,6 +1472,16 @@ namespace openxr_api_layer {
                                      m_overlayActive ? "ENABLED" : "DISABLED"));
                 }
             }
+                        // Schakelaar voor 72 Hz / 90 Hz via de H-toets
+            static detail::RisingEdgeDetector s_hzHotkeyDetector;
+            detail::HotkeySpec hzSpec{};
+            hzSpec.vk = 'S'; // <--- Dit is de H-toets
+            if (s_hzHotkeyDetector.tick(pollHotkeyPressed(hzSpec))) {
+                const bool new72 = !m_force72Hz.load(std::memory_order_relaxed);
+                m_force72Hz.store(new72, std::memory_order_relaxed);
+                Log(fmt::format("xr_telemetry: hotkey pressed — target {} Hz\n", new72 ? 72 : 90));
+            }
+
         }
 
         // SINGLETON LIFETIME — this destructor runs from
@@ -2013,7 +2023,9 @@ namespace openxr_api_layer {
             if (XR_SUCCEEDED(result) && frameState) {
                 m_tWaitIn.store(tWaitIn, std::memory_order_relaxed);
                 m_tWaitOut.store(tWaitOut, std::memory_order_relaxed);
-                m_predictedPeriodNs.store(13888889LL, std::memory_order_relaxed);
+                                const int64_t targetPeriodNs = m_force72Hz.load(std::memory_order_relaxed) ? 13888889LL : 11111111LL;
+                m_predictedPeriodNs.store(targetPeriodNs, std::memory_order_relaxed);
+
                 m_lastShouldRender.store(frameState->shouldRender == XR_TRUE, std::memory_order_relaxed);
             }
             return result;
@@ -2831,6 +2843,7 @@ namespace openxr_api_layer {
         // via atomic exchange so the read+write is one operation.
         std::atomic<int64_t> m_tEndPrev{0};
         std::atomic<int64_t> m_predictedPeriodNs{0};
+        std::atomic<bool> m_force72Hz{true};
         std::atomic<bool> m_lastShouldRender{true};
         std::atomic<uint64_t> m_frameIndex{0};
 
