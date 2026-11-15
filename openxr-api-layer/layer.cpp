@@ -1472,15 +1472,17 @@ namespace openxr_api_layer {
                                      m_overlayActive ? "ENABLED" : "DISABLED"));
                 }
             }
-                        // Schakelaar voor 72 Hz / 90 Hz via de H-toets
-            static detail::RisingEdgeDetector s_hzHotkeyDetector;
+            // Schakelaar voor 72 Hz / 90 Hz via de S-toets
+            static bool s_wasHzKeyDown = false;
             detail::HotkeySpec hzSpec{};
-            hzSpec.vk = 'S'; // <--- Dit is de H-toets
-            if (s_hzHotkeyDetector.tick(pollHotkeyPressed(hzSpec))) {
+            hzSpec.vk = 'S';
+            const bool isHzKeyDown = pollHotkeyPressed(hzSpec);
+            if (isHzKeyDown && !s_wasHzKeyDown) {
                 const bool new72 = !m_force72Hz.load(std::memory_order_relaxed);
                 m_force72Hz.store(new72, std::memory_order_relaxed);
                 Log(fmt::format("xr_telemetry: hotkey pressed — target {} Hz\n", new72 ? 72 : 90));
             }
+            s_wasHzKeyDown = isHzKeyDown;
 
         }
 
