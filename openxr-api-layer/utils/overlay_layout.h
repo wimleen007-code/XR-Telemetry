@@ -45,6 +45,8 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
+#include <atomic>
+#include <string>
 
 namespace openxr_api_layer::detail {
 
@@ -225,11 +227,15 @@ namespace openxr_api_layer::detail {
             return std::isfinite(p) ? std::clamp(p / 100.0f, 0.0f, 1.0f) : 0.0f;
         };
 
-        v.fps_instant      = fmtFpsInt(snap.fps_instant);
-        v.fps_avg          = fmtFpsInt(snap.fps_avg);
-        v.fps_p95          = fmtFpsInt(snap.fps_p95);
-        v.fps_p99          = fmtFpsInt(snap.fps_p99);
-        v.fps_p99_9        = fmtFpsInt(snap.fps_p99_9);
+            inline std::atomic<uint32_t> g_cpuDrops{0};
+            inline std::atomic<uint32_t> g_gpuDrops{0};
+
+            v.fps_instant = fmtFpsInt(snap.fps_instant);
+            v.fps_avg     = fmtFpsInt(snap.fps_avg);
+            v.fps_p95     = fmtFpsInt(snap.fps_p95);
+            v.fps_p99     = fmtFpsInt(snap.fps_p99);
+            v.fps_p99_9   = std::to_string(g_cpuDrops.load()) + "/" + std::to_string(g_gpuDrops.load());
+
 
         v.gpu_frametime_ms = fmtMsOneDecimal(snap.gpu_frame_ms);
         v.cpu_frametime_ms = fmtMsOneDecimal(snap.cpu_frame_ms);
