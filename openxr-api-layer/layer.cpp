@@ -1483,6 +1483,17 @@ namespace openxr_api_layer {
                 Log(fmt::format("xr_telemetry: hotkey pressed — target {} Hz\n", new72 ? 72 : 90));
             }
             s_wasHzKeyDown = isHzKeyDown;
+                        // Reset CPU/GPU drops teller naar 0 met de D-toets
+            static bool s_wasResetKeyDown = false;
+            detail::HotkeySpec resetSpec{};
+            resetSpec.vk = 'D';
+            const bool isResetKeyDown = pollHotkeyPressed(resetSpec);
+            if (isResetKeyDown && !s_wasResetKeyDown) {
+                detail::g_cpuDrops.store(0, std::memory_order_relaxed);
+                detail::g_gpuDrops.store(0, std::memory_order_relaxed);
+                Log("xr_telemetry: hotkey pressed — drops teller gereset naar 0/0\n");
+            }
+            s_wasResetKeyDown = isResetKeyDown;
 
         }
 
@@ -2709,7 +2720,15 @@ namespace openxr_api_layer {
                             : r.app_cpu_ns;
                     m_overlayRenderer->pushFrameSample(cpu_per_cycle_ns,
                                                        r.gpu_time_ns);
+                              if (r.period_ns > 0) {
+                    if (cpu_per_cycle_ns > r.period_ns) {
+                        detail::g_cpuDrops.fetch_add(1, std::memory_order_relaxed);
+                    }
+                    if (r.gpu_time_ns > r.period_ns) {
+                        detail::g_gpuDrops.fetch_add(1, std::memory_order_relaxed);
+                    }
                 }
+  }
             }
         }
 
