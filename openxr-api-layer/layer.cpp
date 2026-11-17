@@ -2864,7 +2864,7 @@ namespace openxr_api_layer {
         // via atomic exchange so the read+write is one operation.
         std::atomic<int64_t> m_tEndPrev{0};
         std::atomic<int64_t> m_predictedPeriodNs{0};
-        std::atomic<bool> m_force72Hz{false};
+        std::atomic<bool> m_force72Hz{true};
         std::atomic<bool> m_lastShouldRender{true};
         std::atomic<uint64_t> m_frameIndex{0};
 
